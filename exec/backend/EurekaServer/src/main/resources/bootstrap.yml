@@ -1,0 +1,10 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eurekaserver
+
+  cloud:
+    config:
+      uri: http://k4c104.p.ssafy.io:8888

@@ -1,0 +1,103 @@
+version: "3"
+
+services:
+  grium_transactionserver:
+    build:
+      context: TransactionServer
+      dockerfile: Dockerfile-local
+    expose:
+      - 8081
+    depends_on:
+      - grium_configserver
+    networks:
+      - grium_net
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+
+  grium_condolenceserver:
+    build:
+      context: CondolenceServer
+      dockerfile: Dockerfile-local
+    expose:
+      - 8001
+    depends_on:
+      - grium_configserver
+    networks:
+      - grium_net
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  grium_configserver:
+    container_name: grium-configserver
+    build:
+      context: ConfigServer
+      dockerfile: Dockerfile-local
+    expose:
+      - 8888
+    networks:
+      - grium_net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  grium_eurekaserver:
+    container_name: grium-eurekaserver
+    build:
+      context: EurekaServer
+      dockerfile: Dockerfile-local
+    ports:
+      - 8761:8761
+    # expose:
+    # - 8761
+    depends_on:
+      - grium_configserver
+    networks:
+      - grium_net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  grium_zuulserver:
+    container_name: grium-zuulserver
+    build:
+      context: ZuulServer
+      dockerfile: Dockerfile-local
+    ports:
+      - 5555:5555
+    depends_on:
+      - grium_configserver
+    networks:
+      - grium_net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  grium_authserver:
+    container_name: grium-authserver
+    build:
+      context: AuthServer
+      dockerfile: Dockerfile-local
+    expose:
+      - 8443
+    depends_on:
+      - grium_configserver
+    networks:
+      - grium_net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+networks:
+  grium_net:
+    driver: bridge

@@ -1,0 +1,22 @@
+node {
+     stage('Clone repository') {
+         checkout scm
+     }
+     dir('backend/EurekaServer'){
+        stage('gradlew build'){
+            sh './gradlew clean build'
+        }
+        stage('Build image') {
+            sh 'aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 521797937488.dkr.ecr.ap-northeast-2.amazonaws.com'
+            sh 'docker build -t eureka_server .'
+        }
+        stage('Push image') {
+
+            sh 'docker tag eureka_server:latest 521797937488.dkr.ecr.ap-northeast-2.amazonaws.com/eureka_server:latest'
+            sh 'docker push 521797937488.dkr.ecr.ap-northeast-2.amazonaws.com/eureka_server:latest'
+        }
+        stage('Deploy ECS'){
+            sh 'aws ecs update-service --cluster grium --service EurekaServer --force-new-deployment'
+        }
+     }
+}
